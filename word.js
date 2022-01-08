@@ -1,10 +1,22 @@
-export class Word {
+class Word {
     constructor(text, size, speed, x, y) {
         this.text = text;
         this.size = size;
         this.speed = speed;
         this.x = x;
         this.y = y;
+    }
+
+    getWidth(ctx) {
+        if (!(ctx instanceof CanvasRenderingContext2D))
+            throw Error('Invalid context');
+
+        ctx.save();
+        ctx.font = `${this.size}px serif`;
+        let width = ctx.measureText(this.text).width;
+        ctx.restore();
+
+        return width;
     }
     
     update(dt = 1) {
@@ -19,3 +31,4 @@ export class Word {
     }
 }
 
+export {Word};
