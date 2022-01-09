@@ -1,5 +1,6 @@
 import {Word} from './word.js';
 import {wordList} from './wordList.js';
+import {Menu} from './menu.js';
 
 // canvas setup
 const canvas = document.getElementById('game');
@@ -35,6 +36,19 @@ let lives = 3; // current lives
 requestAnimationFrame(gameLoop);
 window.addEventListener('keydown', handleKey);
 let wordInterval = setInterval(addWord, START_INTERVAL);
+
+// menu test
+let testMenu = new Menu(30, 30, 300, 300, 'test menu', 
+                     {
+                      label: 'button1', 
+                      callback: (e) => {console.log('button1')}
+                     },
+                     {
+                      label: 'button2', 
+                      callback: (e) => {console.log('button2')}
+                     });
+testMenu.show();
+
 
 
 function gameLoop(time) {
