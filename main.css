@@ -6,6 +6,28 @@ html, body {
     width: 100vw;
     height: 100vh;
 }
+
+body {
+    background-color: #ffe3ac;
+
+    display: flex;
+    flex-direction: column;
+}
+
+#statusBar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#statusBar div {
+    font-size: 3vw;
+}
+
+#canvasContainer {
+    flex-grow: 1;
+}
+
 canvas {
     display: block;
     background-color: #ffe3ac;
