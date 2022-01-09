@@ -57,4 +57,8 @@ export class Menu {
     hide() {
         this.menu.style.display = 'none';
     }
+
+    updateLabel(label) {
+        this.menu.querySelector(".label p").innerHTML = label;
+    }
 }

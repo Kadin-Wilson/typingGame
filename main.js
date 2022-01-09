@@ -31,27 +31,52 @@ let previousTime; // last timestamp (used for delta time)
 let score = 0; // current score
 let level = 1; // current level
 let lives = 3; // current lives
+let frame, wordInterval;
 
-// start game
-requestAnimationFrame(gameLoop);
-window.addEventListener('keydown', handleKey);
-let wordInterval = setInterval(addWord, START_INTERVAL);
+let startMenu = new Menu(30, 30, 300, 300, 'Click start to play!',
+                         {label: 'Start', callback: (e) => {runStartup()}});
 
-// menu test
-let testMenu = new Menu(30, 30, 300, 300, 'test menu', 
-                     {
-                      label: 'button1', 
-                      callback: (e) => {console.log('button1')}
-                     },
-                     {
-                      label: 'button2', 
-                      callback: (e) => {console.log('button2')}
-                     });
-testMenu.show();
+let endMenu = new Menu(30, 30, 300, 300, 
+                       `Gameover! <br> Your Score: ${score}`,
+                       {label: 'Try Again', callback: (e) => {runStartup()}});
 
+startMenu.show();
 
+function runStartup() {
+    words = []; // words on screen
+    currentWord = null; // active word
+    entry = ''; // currently typed entry
+    previousTime; // last timestamp (used for delta time)
+    score = 0; // current score
+    level = 1; // current level
+    lives = 3;
+
+    scoreElm.innerHTML = `Score: ${score}`;
+    levelElm.innerHTML = `Level: ${level}`;
+    livesElm.innerHTML = `Lives: ${lives}`;
+
+    let start = startGame();
+    frame = start.frame;
+    wordInterval = start.wordInterval;
+}
+
+function startGame() {
+    window.addEventListener('keydown', handleKey);
+    let wordInterval = setInterval(addWord, START_INTERVAL);
+    let frame = requestAnimationFrame(gameLoop);
+
+    return {frame, wordInterval};
+}
+
+function endGame() {
+    cancelAnimationFrame(frame);
+    clearInterval(wordInterval);
+    endMenu.updateLabel(`Gameover! <br> Your Score: ${score}`);
+    endMenu.show();
+}
 
 function gameLoop(time) {
+    frame = requestAnimationFrame(gameLoop);
     if (previousTime === undefined)
         previousTime = time;
     const dt = (time - previousTime) * 0.001;
@@ -60,7 +85,6 @@ function gameLoop(time) {
     drawCanvas();
 
     previousTime = time;
-    requestAnimationFrame(gameLoop);
 }
 
 function update(dt) {
@@ -101,6 +125,11 @@ function update(dt) {
                  livesElm.innerHTML = `Lives: ${lives}`;
              }
          });
+
+    // end game when we run out of lives
+    if (lives == 0) {
+        endGame();
+    }
 }
 
 function drawCanvas() {
