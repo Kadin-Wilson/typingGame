@@ -36,6 +36,7 @@ canvas {
 .menu {
     position: fixed;
     border: 5px double black;
+    box-shadow: 3px 3px 3px black;
     background-color: #ffe3ac;
     text-align: center;
     
@@ -46,7 +47,6 @@ canvas {
 
 .menu .label {
     font-size: 2vw;
-    background-color: cornflowerBlue;
 
     flex-grow: 2;
 
@@ -56,6 +56,8 @@ canvas {
 }
 
 .menu .buttonContainer {
+    max-height: 100px;
+
     flex-grow: 1;
 
     display: flex;
@@ -64,9 +66,21 @@ canvas {
 }
 
 .menu .buttonContainer button {
-    border: none;
-    background-color: coral;
+    background-color: #ffe3ac;
+    border: 1px solid black;
+    margin: 5px;
+    font-size: 2vw;
+    font-weight: bold;
 
     flex-grow: 1;
+
+    transition: 0.3s;
 }
 
+.menu .buttonContainer button:hover {
+    background-color: #fed481;
+}
+
+.menu .buttonContainer button:active {
+    transform: scale(0.99) translate(2px, 2px);
+}

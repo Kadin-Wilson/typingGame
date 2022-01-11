@@ -33,10 +33,16 @@ let level = 1; // current level
 let lives = 3; // current lives
 let frame, wordInterval;
 
-let startMenu = new Menu(30, 30, 300, 300, 'Click start to play!',
+let menuWidth = 350;
+let menuHeight = 300;
+let startMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
+                         (canvas.height / 2) - (menuHeight / 2), 
+                         menuWidth, menuHeight, 
+                         'Click start to play!',
                          {label: 'Start', callback: (e) => {runStartup()}});
-
-let endMenu = new Menu(30, 30, 300, 300, 
+let endMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
+                       (canvas.height / 2) - (menuHeight / 2), 
+                       menuWidth, menuHeight, 
                        `Gameover! <br> Your Score: ${score}`,
                        {label: 'Try Again', callback: (e) => {runStartup()}});
 
