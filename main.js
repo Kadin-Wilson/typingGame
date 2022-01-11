@@ -48,6 +48,7 @@ let endMenu = new Menu((canvas.width / 2) - (menuWidth / 2),
 
 startMenu.show();
 
+// initialize gamestate then start game
 function runStartup() {
     words = []; // words on screen
     currentWord = null; // active word
@@ -66,6 +67,7 @@ function runStartup() {
     wordInterval = start.wordInterval;
 }
 
+// set listeners, intervals, animation
 function startGame() {
     window.addEventListener('keydown', handleKey);
     let wordInterval = setInterval(addWord, START_INTERVAL);
@@ -74,6 +76,8 @@ function startGame() {
     return {frame, wordInterval};
 }
 
+// cancel listeners, intervals, animation
+// show end menu
 function endGame() {
     cancelAnimationFrame(frame);
     clearInterval(wordInterval);
