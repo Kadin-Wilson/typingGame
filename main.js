@@ -1,6 +1,7 @@
 import {Word} from './word.js';
 import {wordList} from './wordList.js';
 import {Menu} from './menu.js';
+import {GameState} from './gamestate.js';
 
 // canvas setup
 const canvas = document.getElementById('game');
@@ -22,72 +23,60 @@ const END_LINE = canvas.width / 15; // position of end of screen line
 const START_INTERVAL = 2000; // initial speed of word spawn
 const LEVEL_INTERVAL = 150;  // point interval for levelup 
 const LEVEL_SPEEDUP = 250;
+const INITIAL_LEVEL = 1;
+const INITIAL_SCORE = 0;
+const INITIAL_LIVES = 3;
 
 // globals
-let words = []; // words on screen
-let currentWord = null; // active word
-let entry = ''; // currently typed entry
-let previousTime; // last timestamp (used for delta time)
-let score = 0; // current score
-let level = 1; // current level
-let lives = 3; // current lives
-let frame, wordInterval;
+let previousTime = null;
+let frame, wordInterval, gamestate;
 
+// menu setup
 let menuWidth = 350;
 let menuHeight = 300;
 let startMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
                          (canvas.height / 2) - (menuHeight / 2), 
                          menuWidth, menuHeight, 
                          'Click start to play!',
-                         {label: 'Start', callback: (e) => {runStartup()}});
+                         {label: 'Start', callback: (e) => {startGame()}});
 let endMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
                        (canvas.height / 2) - (menuHeight / 2), 
                        menuWidth, menuHeight, 
-                       `Gameover! <br> Your Score: ${score}`,
-                       {label: 'Try Again', callback: (e) => {runStartup()}});
+                       `Gameover! <br> Your Score:`,
+                       {label: 'Try Again', callback: (e) => {startGame()}});
 
+// entry point
 startMenu.show();
 
-// initialize gamestate then start game
-function runStartup() {
-    words = []; // words on screen
-    currentWord = null; // active word
-    entry = ''; // currently typed entry
-    previousTime; // last timestamp (used for delta time)
-    score = 0; // current score
-    level = 1; // current level
-    lives = 3;
 
-    scoreElm.innerHTML = `Score: ${score}`;
-    levelElm.innerHTML = `Level: ${level}`;
-    livesElm.innerHTML = `Lives: ${lives}`;
-
-    let start = startGame();
-    frame = start.frame;
-    wordInterval = start.wordInterval;
-}
-
-// set listeners, intervals, animation
+// set listeners, intervals, gameloop
 function startGame() {
-    window.addEventListener('keydown', handleKey);
-    let wordInterval = setInterval(addWord, START_INTERVAL);
-    let frame = requestAnimationFrame(gameLoop);
+    scoreElm.innerHTML = `Score: ${INITIAL_SCORE}`;
+    levelElm.innerHTML = `Level: ${INITIAL_LEVEL}`;
+    livesElm.innerHTML = `Lives: ${INITIAL_LIVES}`;
 
-    return {frame, wordInterval};
+    gamestate = new GameState(INITIAL_SCORE, 
+                              INITIAL_LEVEL, 
+                              INITIAL_LIVES, 
+                              END_LINE);
+
+    window.addEventListener('keydown', handleKey);
+    wordInterval = setInterval(addWord, START_INTERVAL);
+    frame = requestAnimationFrame(gameLoop);
 }
 
-// cancel listeners, intervals, animation
+// cancel listeners, intervals, gameloop
 // show end menu
 function endGame() {
     cancelAnimationFrame(frame);
     clearInterval(wordInterval);
-    endMenu.updateLabel(`Gameover! <br> Your Score: ${score}`);
+    endMenu.updateLabel(`Gameover! <br> Your Score: ${gamestate.score}`);
     endMenu.show();
 }
 
 function gameLoop(time) {
     frame = requestAnimationFrame(gameLoop);
-    if (previousTime === undefined)
+    if (previousTime === null)
         previousTime = time;
     const dt = (time - previousTime) * 0.001;
 
@@ -98,73 +87,54 @@ function gameLoop(time) {
 }
 
 function update(dt) {
-    for (let word of words)
+    for (let word of gamestate.words)
         word.update(dt);
 
-    // word is completed
-    if (currentWord != null && entry == currentWord.text) {
-        // update score
-        score += currentWord.text.length * level;
-        scoreElm.innerHTML = `Score: ${score}`;
-
-        // reset current word and entry
-        words.splice(words.indexOf(currentWord), 1);
-        currentWord = null;
-        entry = '';
+    if (gamestate.completeWord()) {
+        scoreElm.innerHTML = `Score: ${gamestate.score}`;
     }
 
-    // level up at certain scores
-    if (score > LEVEL_INTERVAL * level * level) {
+    if (gamestate.levelUp(LEVEL_INTERVAL)) {
         clearInterval(wordInterval);
-        wordInterval = setInterval(addWord, START_INTERVAL - LEVEL_SPEEDUP * level);
-        ++level;
-        levelElm.innerHTML = `Level: ${level}`;
+        wordInterval = setInterval(addWord, 
+                                   START_INTERVAL - LEVEL_SPEEDUP * gamestate.level);
+        levelElm.innerHTML = `Level: ${gamestate.level}`;
     }
 
-    //remove words that have passed out of view
-    words.filter(w => w.x < 0 - w.getWidth(ctx))
-         .forEach(w => {
-             if (currentWord == w) {
-                 currentWord = null;
-                 entry = '';
-             }
-             words.splice(words.indexOf(w), 1);
-
-             if (lives > 0) {
-                 --lives;
-                 livesElm.innerHTML = `Lives: ${lives}`;
-             }
-         });
+    if (gamestate.failedWords(w => w.x < 0 - w.getWidth(ctx))) {
+        livesElm.innerHTML = `Lives: ${gamestate.lives}`;
+    }
 
     // end game when we run out of lives
-    if (lives == 0) {
+    if (gamestate.lives == 0) {
         endGame();
     }
 }
 
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let word of words)
+    for (let word of gamestate.words)
         word.draw(ctx);
 
     // draw endline
     ctx.fillRect(END_LINE, canvas.height/15, 2, canvas.height - (canvas.height/15)*2);
 
     // draw words passed the endline as red
-    words.filter(w => w.x < END_LINE)
-         .forEach(w => {
-             ctx.save();
-             ctx.fillStyle = 'red';
-             w.draw(ctx);
-             ctx.restore();
-         });
+    gamestate.words.filter(w => w.x < END_LINE)
+                   .forEach(w => {
+                       ctx.save();
+                       ctx.fillStyle = 'red';
+                       w.draw(ctx);
+                       ctx.restore();
+                   });
 
     // draw entry
-    if (currentWord != null) {
+    if (gamestate.currentWord != null) {
         ctx.save();
         ctx.fillStyle = 'blue';
-        ctx.font = `${currentWord.size}px serif`;
-        ctx.fillText(entry, currentWord.x, currentWord.y);
+        ctx.font = `${gamestate.currentWord.size}px serif`;
+        ctx.fillText(gamestate.entry, 
+                     gamestate.currentWord.x, gamestate.currentWord.y);
         ctx.restore();
     }
 }
@@ -175,21 +145,13 @@ function handleKey(e) {
     // only worry about letters, ignore other keys
     if (key.toLowerCase() == key.toUpperCase()) return; 
 
-    if (currentWord == null && words.some(w => w.text[0] == key && w.x > END_LINE)) {
-        // get closest word that starts with key and isn't passed the endline
-        currentWord = words.filter(w => w.text[0] == key && w.x > END_LINE) 
-                           .reduce((a, b) => a.x < b.x ? a : b); 
-    }
-    // if key didn't match a word then exit
-    if (currentWord == null) return; 
-
-    // update entry if right key was pressed
-    if (currentWord.text[entry.length] == key)
-        entry += key;
+    gamestate.enterCharacter(key);
 }
 
 function addWord() {
-    words.push(randomWord(wordList, canvas.width + 10, 30, canvas.height - 30));
+    gamestate.addWord(randomWord(wordList, 
+                                 canvas.width + 10, 
+                                 30, canvas.height - 30));
 }
 
 function randomWord(list, x, minY, maxY) {
