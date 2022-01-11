@@ -1,4 +1,13 @@
 class GameState {
+    /**
+     * Class containing all the state for the typing game.
+     * All changes to game state are made through state object methods.
+     *
+     * score - initial score
+     * level - initial level
+     * lives - initial lives
+     * entryOffset - point past which a new word entry can't be started
+     */
     constructor(score, level, lives, entryOffset) {
         this.score = score;
         this.level = level;
@@ -6,14 +15,20 @@ class GameState {
         this.entryOffset = entryOffset;
 
         this.words = [];
-        this.currentWord = null;
-        this.entry = '';
+        this.currentWord = null; // word to be typed / matched with entry
+        this.entry = ''; // currently typed entry
     }
 
     addWord(word) {
         this.words.push(word);
     }
 
+    /**
+     * Adds character to current entry if it matches the current word
+     * if no word is active, find a word matching the character
+     *
+     * char - character to add to entry
+     */
     enterCharacter(char) {
         if (this.currentWord == null 
          && this.words.some(w => w.text[0] == char && w.x > this.entryOffset)) {
@@ -30,6 +45,13 @@ class GameState {
             this.entry += char;
     }
 
+    /**
+     * If entry matches current word, clear entry and current word,
+     * increase score, and remove word.
+     *
+     * returns - true if word was completed 
+     *           false otherwise
+     */
     completeWord() {
         if (this.wordIsComplete()) {
             // update score
@@ -46,6 +68,13 @@ class GameState {
         return false;
     }
 
+    /**
+     * If score has passed required value, increase level
+     *
+     * levelInterval - used in calculation of score threshold
+     * returns - true if level goes up
+     *           false otherwise
+     */
     levelUp(levelInterval) {
         if (this.score > levelInterval * this.level * this.level) {
             ++this.level;
@@ -55,6 +84,14 @@ class GameState {
         return false;
     }
 
+    /**
+     * Remove words that haven't been typed and deincrement lives for 
+     * each failed word.
+     *
+     * failCondition - predicate to check if word is failed
+     * returns - true if words have failed / lives have been lost
+     *           false otherwise
+     */
     failedWords(failCondition) {
         let livesLost = false;
 
