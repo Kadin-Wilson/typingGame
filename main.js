@@ -86,7 +86,8 @@ function endGame() {
     clearInterval(wordInterval);
 
     Highscore.addScore(gamestate.score);
-    scoreMenu.updateLabel(`High Scores: `, Highscore.getScoreList());
+    scoreMenu.updateLabel(`High Scores:`, document.createElement('hr'),
+                                          Highscore.getScoreList());
     endMenu.updateLabel(`Gameover! <br> Your Score: ${gamestate.score}`);
     endMenu.show();
 }

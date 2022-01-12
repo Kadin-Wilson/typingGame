@@ -56,6 +56,21 @@ canvas {
     justify-content: center;
 }
 
+.label hr {
+    border-top: 1px solid black;
+    width: 80%;
+    margin: 10px auto;
+}
+
+.scoreList {
+    list-style-position: outside;
+    padding-left: 40%;
+}
+
+.scoreList li {
+    text-align: left;
+}
+
 .menu .buttonContainer {
     max-height: 100px;
 
