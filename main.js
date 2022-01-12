@@ -2,6 +2,7 @@ import {Word} from './word.js';
 import {wordList} from './wordList.js';
 import {Menu} from './menu.js';
 import {GameState} from './gamestate.js';
+import * as Highscore from './highscore.js';
 
 // canvas setup
 const canvas = document.getElementById('game');
@@ -34,6 +35,17 @@ let frame, wordInterval, gamestate;
 // menu setup
 let menuWidth = 350;
 let menuHeight = 300;
+let scoreMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
+                       (canvas.height / 2) - (menuHeight), 
+                       menuWidth, menuHeight * 2, 
+                       'Highscores:',
+                       {label: 'Try Again', callback: (e) => {startGame();}});
+let endMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
+                       (canvas.height / 2) - (menuHeight / 2), 
+                       menuWidth, menuHeight, 
+                       `Gameover! <br> Your Score:`,
+                       {label: 'Try Again', callback: () => startGame()},
+                       {label: 'High Scores', callback: () => scoreMenu.show()});
 let startMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
                          (canvas.height / 2) - (menuHeight / 2), 
                          menuWidth, menuHeight, 
@@ -43,13 +55,10 @@ let startMenu = new Menu((canvas.width / 2) - (menuWidth / 2),
                                      .style.visibility = 'visible';
                              startGame();
                          }});
-let endMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
-                       (canvas.height / 2) - (menuHeight / 2), 
-                       menuWidth, menuHeight, 
-                       `Gameover! <br> Your Score:`,
-                       {label: 'Try Again', callback: (e) => {startGame();}});
 
 // entry point
+Highscore.load();
+window.addEventListener('beforeunload', () => Highscore.save());
 startMenu.show();
 
 
@@ -70,10 +79,14 @@ function startGame() {
 }
 
 // cancel listeners, intervals, gameloop
+// update score and menus
 // show end menu
 function endGame() {
     cancelAnimationFrame(frame);
     clearInterval(wordInterval);
+
+    Highscore.addScore(gamestate.score);
+    scoreMenu.updateLabel(`High Scores: `, Highscore.getScoreList());
     endMenu.updateLabel(`Gameover! <br> Your Score: ${gamestate.score}`);
     endMenu.show();
 }

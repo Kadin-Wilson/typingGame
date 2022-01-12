@@ -10,9 +10,11 @@ function load() {
 }
 
 function addScore(score) {
-    let smallestScore = scores.reduce((a, b) => a < b ? a : b);
-    if (score > smallestScore)
-        scores[scores.indexOf(smallestScore)] = score;
+    let lowestScore = scores.reduce((a, b) => a < b ? a : b);
+    if (score > lowestScore) {
+        scores[scores.indexOf(lowestScore)] = score;
+        scores.sort((a, b) => b - a);
+    }
 }
 
 function save() {
