@@ -38,12 +38,16 @@ let startMenu = new Menu((canvas.width / 2) - (menuWidth / 2),
                          (canvas.height / 2) - (menuHeight / 2), 
                          menuWidth, menuHeight, 
                          'Click start to play!',
-                         {label: 'Start', callback: (e) => {startGame()}});
+                         {label: 'Start', callback: (e) => {
+                             document.getElementById('statusBar')
+                                     .style.visibility = 'visible';
+                             startGame();
+                         }});
 let endMenu = new Menu((canvas.width / 2) - (menuWidth / 2), 
                        (canvas.height / 2) - (menuHeight / 2), 
                        menuWidth, menuHeight, 
                        `Gameover! <br> Your Score:`,
-                       {label: 'Try Again', callback: (e) => {startGame()}});
+                       {label: 'Try Again', callback: (e) => {startGame();}});
 
 // entry point
 startMenu.show();
