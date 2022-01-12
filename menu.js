@@ -58,7 +58,15 @@ export class Menu {
         this.menu.style.display = 'none';
     }
 
-    updateLabel(label) {
-        this.menu.querySelector(".label p").innerHTML = label;
+    updateLabel(labelText, ...elements) {
+        let label = this.menu.querySelector(".label");
+        let labelP = this.menu.querySelector(".label p");
+
+        labelP.innerHTML = labelText;
+        while(labelP.nextSibling)
+            label.removeChild(labelP.nextSibling);
+
+        for (let element of elements)
+            label.appendChild(element);
     }
 }
